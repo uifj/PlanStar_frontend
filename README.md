@@ -1,145 +1,175 @@
 # PlanStar
 
-PlanStar（企划星）是基于 Anytype 渲染器构建的自托管知识工作台。应用支持 Web 浏览器运行，也支持 Electron 桌面安装，后端使用自托管的 PlanStar API 服务。
+> 中文文档：[README.zh-CN.md](./README.zh-CN.md)
+
+PlanStar（企划星）is a self-hosted knowledge workspace, built on the Anytype
+renderer. It runs in a web browser and as an Electron desktop app, and talks to
+a self-hosted [PlanStar API](https://github.com/uifj/PlanStar_server) backend,
+which lives in its own repository.
 
 ## Screenshots
 
-| Home | Public Vans |
+| Boot — star ignition | Second page — Ink Paper |
 | --- | --- |
-| ![Home](docs/screenshots/home.png) | ![Public vans browse](docs/screenshots/vans-browse.png) |
+| ![PlanStar boot badge](docs/screenshots/boot-splash.png) | ![PlanStar paper splash](docs/screenshots/paper-splash.png) |
 
-| Van Detail | Renter Bookings |
-| --- | --- |
-| ![Van detail booking flow](docs/screenshots/van-detail.png) | ![Renter bookings](docs/screenshots/renter-bookings.png) |
-
-| Host Dashboard | Host Inventory |
-| --- | --- |
-| ![Host dashboard](docs/screenshots/host-dashboard.png) | ![Host van inventory](docs/screenshots/host-vans.png) |
+The start-up runs as two screens: a self-contained boot badge (a four-point
+gradient star with an orbiting ring, glow and twinkle), then an "Ink Paper"
+splash that unfolds into a document while the account/vault status loads
+beneath it.
 
 ## Features
 
-- Public van browsing with search, type filters, sorting, and pagination
-- Van detail pages with booking requests
-- Renter bookings with status filters, sorting, pagination, cancellation, and read-only submitted reviews
-- Host dashboard, income, reviews, bookings, and van inventory management
-- Host create, edit, and archive workflows for listed vans
-- Sign in, sign up, sign out, account, and password management
-- Role-aware navigation for public, renter, and host users
-
-## Backend
-
-This frontend expects the VanLife API to run separately:
-
-[kangcommit/vanLife-api](https://github.com/kangcommit/vanLife-api)
-
-Create `.env` in the project root and point the frontend to the API:
-
-```bash
-VITE_API_BASE_URL=http://localhost:PORT
-```
-
-Replace `PORT` with the backend port.
-
-## Demo Accounts
-
-```txt
-Host:        host@vanlife.test / password123
-Second host: host.two@vanlife.test / password123
-Renter:      renter@vanlife.test / password123
-```
+- Knowledge workspace client: spaces, objects, blocks, data views, relations
+  and a graph view, rendered by the Anytype-derived component layer.
+- Runs twice from one codebase: in the browser (`entry.web.tsx` injects an
+  `electronMock`) and as a native Electron shell (`entry.tsx`), with the same
+  renderer.
+- Email/password sign-in through the backend's Better Auth service.
+- Realtime collaboration and a publish/sharing surface, backed by the API.
+- Desktop capabilities behind feature flags: auto-update (electron-updater + a
+  manifest served by the API), crash/feedback intake, and a log uplink.
+- Component catalogue and stories in Storybook.
 
 ## Tech Stack
 
 | Category | Technology |
 | --- | --- |
-| Framework | React |
-| Routing | React Router |
-| Server state | TanStack Query |
-| HTTP client | Axios |
-| Styling | Tailwind CSS |
-| UI variants | Tailwind Variants |
-| Charts | Recharts |
-| Calendar | React DayPicker |
+| Framework | React 18 |
+| State | MobX (`mobx`, `mobx-react-lite`) |
+| Routing | React Router v5 |
+| Editor | TipTap |
+| Graph | PixiJS |
+| Animation | Framer Motion |
+| Drag & drop | `@dnd-kit/*` |
+| Virtualization | `react-virtualized` |
+| Code highlighting | PrismJS |
+| PDF | `react-pdf` |
+| Styling | Frozen `legacy.css` + a Tailwind CSS v4 theme/utilities layer (`src/styles/desktop.css`) for new surfaces |
+| Desktop | Electron + `electron-builder` + `electron-updater` |
+| Build | Vite (`@vitejs/plugin-react-swc`) |
+| Component docs | Storybook |
+| Test | Vitest |
+| Lint / format | Biome |
 | Language | TypeScript |
-| Tooling | Vite, Biome, pnpm |
+
+## Backend
+
+This client expects the [PlanStar API](https://github.com/uifj/PlanStar_server)
+to run separately. Create `.env` in this directory and point the client at it:
+
+```bash
+VITE_API_BASE_URL=http://localhost:8000/api
+```
+
+At boot the client resolves its API base in this order: the `?server=` URL
+parameter, the address stored by a previous boot, `VITE_API_BASE_URL`, then the
+page's own origin plus `/api`. An origin-only value gains the `/api` suffix, so
+`?server=http://HOST:PORT` works without writing `/api`.
 
 ## Getting Started
 
-Requirements:
-
-- Node.js
-- pnpm
-- VanLife API running locally
-
-Install dependencies:
+Requirements: Node.js ≥ 24, pnpm ≥ 11 (`engines`/`packageManager` in
+`package.json`), and the PlanStar API running locally.
 
 ```bash
 pnpm install
-```
 
-Start the development server:
+# .env: VITE_API_BASE_URL=http://localhost:8000/api
 
-```bash
 pnpm dev
 ```
 
-The app runs on:
+The web app runs at `http://localhost:3030`.
 
-```txt
-http://localhost:3000
+### Desktop (Electron)
+
+```bash
+pnpm dev:electron    # build the renderer + main, then launch Electron
+pnpm build:desktop   # web bundle + esbuild main/preload
+pnpm start:electron  # run the packaged shell against the built output
+pnpm dist:mac        # electron-builder --mac --arm64 (unsigned rehearsal)
 ```
+
+The desktop shell needs the renderer build present, or the main process exits
+with an error. See [docs/desktop/](https://github.com/uifj/PlanStar_server/tree/main/docs/desktop)
+for the shell design and
+[docs/desktop/release.md](https://github.com/uifj/PlanStar_server/blob/main/docs/desktop/release.md)
+for publishing.
 
 ## Scripts
 
 | Command | Description |
 | --- | --- |
-| `pnpm dev` | Start the local Vite server |
-| `pnpm build` | Build for production |
+| `pnpm dev` | Start the local Vite dev server (web) |
+| `pnpm build` | Build the web bundle |
 | `pnpm preview` | Preview the production build |
-| `pnpm typecheck` | Run TypeScript checks |
-| `pnpm check` | Run Biome checks |
-| `pnpm check:fix` | Format and fix supported Biome issues |
-| `pnpm check:staged` | Check staged files |
+| `pnpm build:shared` | Build the `desktop-shared` IPC contract package |
+| `pnpm build:electron` | Bundle the Electron main + preload with esbuild |
+| `pnpm build:desktop` | `build` + `build:electron` |
+| `pnpm dev:electron` / `pnpm start:electron` | Run the desktop shell |
+| `pnpm dist:mac` | Package the macOS (arm64) desktop build |
+| `pnpm storybook` | Component catalogue on :6006 |
+| `pnpm typecheck` | TypeScript checks (app + electron configs) |
+| `pnpm test` | Vitest suite |
+| `pnpm check` / `pnpm check:fix` | Biome lint/format |
+| `pnpm lint:gate` | Biome over `electron`, `packages`, and the check scripts |
+| `pnpm check:desktop-parity` / `check:desktop-contract` / `check:desktop-feed-contract` | Desktop bridge/feed contracts |
+| `pnpm verify:desktop-feed` | Verify the updater feed against the API |
 
 ## Architecture
 
-The app follows a module-driven structure:
-
-```txt
+```text
 src/
-  app/
-  modules/
-  shared/
-  assets/
+  html/index.html   Desktop boot template (inline boot badge: star ignition)
+  ts/
+    entry.tsx        Electron renderer entry
+    entry.web.tsx    Browser entry (injects electronMock, then mounts App)
+    app.tsx          Root component: stores, router, theme, boot lifecycle
+    component/       The renderer's component layer (pages, blocks, menus, popups)
+    model/ store/    Domain models and MobX stores
+    interface/       Shared types/contracts
+    lib/             Runtime helpers (desktop bridge, api, utils)
+    hook/ workers/   Hooks and web workers (e.g. the graph adapter)
+  styles/        legacy.css (frozen) + desktop.css (Tailwind v4, the entry for new surfaces)
+  img/           Icons, logo wordmarks (incl. the PlanStar star mark)
+  json/          i18n strings and constants
+dist/index.web.html   Web boot template (same inline badge; Vite entry)
+electron/
+  main.ts main/      Main process (window, IPC command bus, updater, logs)
+  preload.ts preload/ Preload bridge
+  server.ts          Loopback server for the shell
+packages/
+  desktop-shared/    Cross-process IPC contract shared by main, preload and renderer
 ```
 
-- `src/app` owns app composition, routes, layouts, guards, and app-level pages.
-- `src/modules/*` owns feature modules such as auth, vans, bookings, and host.
-- `src/shared` owns reusable neutral code and cross-module domain code.
-- Modules do not import from other modules.
-- Shared code does not import from app or modules.
+The renderer is desktop-agnostic: in the browser `entry.web.tsx` installs an
+`electronMock` so `window.Electron` and the desktop facade resolve to no-ops,
+keeping one codebase for both targets.
+
+The splash screens span both layers: the boot badge is plain DOM inlined in the
+HTML templates (`src/html/index.html` for the desktop shell, `dist/index.web.html`
+for the web entry) and is torn down by `app.tsx`; the second, Ink Paper screen is
+React-rendered into `#root-loader` under `app.tsx`'s `rootSplash` class.
 
 ## Quality Checks
-
-Run these before considering a change complete:
 
 ```bash
 pnpm typecheck
 pnpm check
+pnpm test
 ```
 
 ## Production Deployment
 
-This directory builds two artifacts: the web bundle served by Caddy, and the Electron desktop shell.
-Both are deployed from the repository root, not from here:
+This directory builds two artifacts — the web bundle served by Caddy, and the
+Electron desktop shell. The surrounding stack is documented in the API
+repository:
 
-- [../docs/deploy/README.md](../docs/deploy/README.md) — the single-host runbook (secrets,
-  `.env.production`, first start, migrations, release rehearsal, backups, upgrade and rollback, and
-  a 26-line go-live checklist).
-- [../docs/deploy/troubleshooting.md](../docs/deploy/troubleshooting.md) — failure modes with a
-  discriminator for each, including the front-end ones (build OOM, Caddy cannot bind :80).
-- [../docs/desktop/release.md](../docs/desktop/release.md) — publishing a desktop release and the
-  limits of an unsigned build.
+- [deploy/README.md](https://github.com/uifj/PlanStar_server/blob/main/docs/deploy/README.md) — the single-host runbook.
+- [deploy/troubleshooting.md](https://github.com/uifj/PlanStar_server/blob/main/docs/deploy/troubleshooting.md) — failure modes.
+- [desktop/release.md](https://github.com/uifj/PlanStar_server/blob/main/docs/desktop/release.md) — publishing a desktop release.
 
-The images are `../Dockerfile` (API) and `Dockerfile` (web), orchestrated by `../deploy/podman/`.
-To rehearse the whole stack on localhost without a domain or a certificate, see §16 of the runbook.
+The images are the API [Dockerfile](https://github.com/uifj/PlanStar_server/blob/main/Dockerfile)
+and this directory's `Dockerfile` (web), orchestrated by
+[deploy/podman/](https://github.com/uifj/PlanStar_server/tree/main/deploy/podman).
