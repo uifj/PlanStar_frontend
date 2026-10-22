@@ -1,6 +1,6 @@
-# Planstar
+# PlanStar
 
-Planstar（企划星）是基于 Anytype 渲染器构建的自托管知识工作台。应用支持 Web 浏览器运行，也支持 Electron 桌面安装，后端使用自托管的 Planstar API 服务。
+PlanStar（企划星）是基于 Anytype 渲染器构建的自托管知识工作台。应用支持 Web 浏览器运行，也支持 Electron 桌面安装，后端使用自托管的 PlanStar API 服务。
 
 ## Screenshots
 

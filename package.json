@@ -1,9 +1,9 @@
 {
 	"name": "planstar-web",
-	"productName": "Planstar",
+	"productName": "PlanStar",
 	"private": true,
 	"version": "0.57.4",
-	"description": "Planstar (企划星) client speaking to the self-hosted harness server (web and Electron desktop)",
+	"description": "PlanStar (企划星) client speaking to the self-hosted harness server (web and Electron desktop)",
 	"author": "planstar (self-hosted)",
 	"type": "module",
 	"main": "electron-dist/main.cjs",

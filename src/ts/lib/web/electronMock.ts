@@ -262,7 +262,7 @@ class ElectronMock {
 		});
 
 		handlers.set("setBadge", (args) => {
-			document.title = args[0] ? `(${args[0]}) Planstar` : "Planstar";
+			document.title = args[0] ? `(${args[0]}) PlanStar` : "PlanStar";
 			return true;
 		});
 
