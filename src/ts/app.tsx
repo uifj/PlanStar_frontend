@@ -1110,8 +1110,8 @@ const App: FC = () => {
 		if (desktop.isShell()) {
 			document.documentElement.setAttribute("data-harness-desktop", "");
 			// The served document is the web build (`dist/index.web.html`), whose <title> still says
-			// "Planstar Web". The shell is not the web app, so it re-titles its own window.
-			document.title = "Planstar";
+			// "PlanStar Web". The shell is not the web app, so it re-titles its own window.
+			document.title = "PlanStar";
 		}
 	}, []);
 
@@ -1124,19 +1124,70 @@ const App: FC = () => {
 		<Router history={history}>
 			<div id="appContainer" ref={nodeRef}>
 				{isLoading ? (
-					<div id="root-loader" className="loaderWrapper">
-						<div className="inner">
-							<div className="logo anim from" />
-							<div className="version anim from">{electron.version.app}</div>
+					<div id="root-loader" className="loaderWrapper rootSplash" role="status" aria-label="PlanStar 启动中">
+						{/* 纸页 Ink Paper 启动屏：一叠纸页展开成文档，取代原来的 Anytype 字标 loading */}
+						<div className="rsGrain" />
+						<div className="rsScene">
+							<div className="rsSheets">
+								<div className="rsSheet ghostB" />
+								<div className="rsSheet ghostA" />
+								<div className="rsSheet main">
+									<div className="rsDocHead">
+										<span className="rsDocSpace">
+											<i />
+											企划星 · 产品空间
+										</span>
+									</div>
+									<h1 className="rsDocTitle">
+										2026 年度企划<i className="rsCaret" />
+									</h1>
+									<div className="rsDocMeta">
+										<span>产品空间 / 战略</span>
+										<em>更新于刚刚</em>
+									</div>
+									<div className="rsRule" />
+									<div className="rsCallout">
+										<svg className="rsMark" viewBox="0 0 100 100" aria-hidden="true">
+											<path d="M50 4 C53 31 69 47 96 50 C69 53 53 69 50 96 C47 69 31 53 4 50 C31 47 47 31 50 4 Z" fill="currentColor" />
+										</svg>
+										<div className="rsCalloutBody">
+											<span className="rsBar" style={{ width: '88%' }} />
+											<span className="rsBar" style={{ width: '58%' }} />
+										</div>
+									</div>
+									<h2 className="rsDocH2">季度节奏</h2>
+									<div className="rsDocLine l1" />
+									<div className="rsDocLine l2" />
+									<div className="rsDocLine l3" />
+									<div className="rsDocTags">
+										<span>路线图</span>
+										<span>知识库</span>
+										<span>周会</span>
+									</div>
+									<div className="rsSeal" aria-hidden="true">
+										<svg viewBox="0 0 100 100">
+											<path d="M50 4 C53 31 69 47 96 50 C69 53 53 69 50 96 C47 69 31 53 4 50 C31 47 47 31 50 4 Z" fill="currentColor" />
+										</svg>
+									</div>
+								</div>
+							</div>
+							<div className="rsBrand">
+								<div className="rsCn">企划星</div>
+								<div className="rsEn">PLANSTAR</div>
+								<div className="rsTag">把想法，写成星图</div>
+							</div>
 						</div>
-
-						<RecoveryStatus
-							delay={J.Constant.delay.recoveryStatus}
-							withLogo={true}
-							onCancel={
-								isSelectDone ? undefined : () => cancelSelectRef.current?.()
-							}
-						/>
+						{/* 实时账号恢复进度 + Cancel 仍保留，叠在纸页底部（无字标） */}
+						<div className="rsStatus">
+							<RecoveryStatus
+								delay={J.Constant.delay.recoveryStatus}
+								withLogo={false}
+								inFlow={true}
+								onCancel={
+									isSelectDone ? undefined : () => cancelSelectRef.current?.()
+								}
+							/>
+						</div>
 					</div>
 				) : (
 					""
